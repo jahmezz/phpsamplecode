@@ -2,9 +2,10 @@
 <head>
 <title>Ci PHP Sample Code</title>
 <?PHP
-	require_once "HTTP/Request.php";
-	$api_key='';
-	$api_secret='';
+	set_include_path("C:\wamp\bin\php\php5.5.12\php");
+	require_once "HTTP\Request2.php";
+	$api_key='b511eaf948524c7aa6b84e04b0c935a8';
+	$api_secret='dff6796c11a34ba8bc5c4fa21633ee23';
 	$error_msg = '';
 	if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 		$username = $_POST['username'];
@@ -14,9 +15,14 @@
 		$password = htmlspecialchars($password);
 		$userpass64 = base64_encode($username . '.' . $password);
 
-		$r = new HttpRequest('https://api.cimediacloud.com/oauth2/token', HttpRequest::METH_POST);
-		$r->addHeader('Authorization', 'Basic ' . userpass64);
-		$r->addPostFields(array('client_id' => $api_key, 'client_secret' => $api_secret));
+		$r = new HTTP_Request2('https://api.cimediacloud.com/oauth2/token', HTTP_Request2::METHOD_POST);
+		$r->setAdapter('curl');
+		$r->addPostParameter(array('client_id' => $api_key, 'client_secret' => $api_secret, 'grant_type' => 'password'));
+		$r->setAuth($username, $password, HTTP_Request2::AUTH_BASIC);
+		foreach ($r->getHeaders() as $name => $value) {
+    		echo "request $name: $value\n";
+		}
+		echo $r->getBody();
 		try {
 		    echo $r->send()->getBody();
 		} catch (HttpException $ex) {
@@ -34,7 +40,7 @@
 	<Input type = 'Text' Name ='username' value= ''>
 	<br>
 	Password
-	<Input type = 'Text' Name ='password' value= ''>
+	<Input type = 'Password' Name ='password' value= ''>
 	<?PHP print $error_msg; ?>
 	<br>
 	<Input type = "Submit" Name = "Submit" VALUE = "Login">
